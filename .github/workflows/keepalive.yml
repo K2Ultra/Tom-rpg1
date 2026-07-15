@@ -1,0 +1,23 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # 每3天的 UTC 0点 运行一次（北京时间早上8点）
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: {}   # 允许手动触发，方便测试
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://xrzgvazcvozwxknisogj.supabase.co/rest/v1/Saves?select=username&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhyemd2YXpjdm96d3hrbmlzb2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mjk5NjcsImV4cCI6MjA5NTEwNTk2N30.W_St6hceJ49T_PIQNLKbvL8hSIfL0pPjaH7hv1m7tB8")
+          echo "Supabase 响应状态码: $RESPONSE"
+          if [ "$RESPONSE" != "200" ]; then
+            echo "::warning::Supabase 响应异常 ($RESPONSE)，项目可能已暂停，请登录 Dashboard 检查"
+            exit 1
+          fi
+          echo "✅ Supabase 存活，保活成功"
